@@ -8,11 +8,11 @@ namespace ArduinoIntegrationApi.Context
 {
     public static class ContextManager
     {
-        private static ArduinoApiContext Ctx { get; set; } = new();
+        
 
         public static bool RoomExists(string roomName)
         {
-            using (Ctx = new ArduinoApiContext())
+            using ( ArduinoApiContext Ctx = new ArduinoApiContext())
             {
                 var Rooms = (from r in Ctx.Rooms
                     where r.RoomName == roomName
@@ -31,7 +31,7 @@ namespace ArduinoIntegrationApi.Context
             Room newRoom = new Room();
             if (!RoomExists(roomName))
             {
-                using (Ctx = new ArduinoApiContext())
+                using (ArduinoApiContext Ctx = new ArduinoApiContext())
                 {
                     newRoom.RoomName = roomName;
 
@@ -45,6 +45,8 @@ namespace ArduinoIntegrationApi.Context
 
         public static List<Room> GetAllRooms()
         {
+            ArduinoApiContext Ctx = new ArduinoApiContext();
+
             var rooms = (from r in Ctx.Rooms
                 select r).ToList();
 
@@ -55,7 +57,7 @@ namespace ArduinoIntegrationApi.Context
         {
             if (RoomExists(roomName))
             {
-                using (Ctx = new ArduinoApiContext())
+                using (ArduinoApiContext Ctx = new ArduinoApiContext())
                 {
                     Ctx.TemperatureSensors.Add(new TemperatureSensor
                         {
@@ -78,7 +80,7 @@ namespace ArduinoIntegrationApi.Context
         {
             if (RoomExists(roomName))
             {
-                using (Ctx = new ArduinoApiContext())
+                using (ArduinoApiContext Ctx = new ArduinoApiContext())
                 {
                     Ctx.LightSensors.Add(new LightSensor
                         {
@@ -101,7 +103,7 @@ namespace ArduinoIntegrationApi.Context
         {
             if (RoomExists(roomName))
             {
-                using (Ctx = new ArduinoApiContext())
+                using (ArduinoApiContext Ctx = new ArduinoApiContext())
                 {
                     Ctx.WindowLocks.Add(new WindowLock
                         {
@@ -122,6 +124,8 @@ namespace ArduinoIntegrationApi.Context
 
         public static TemperatureSensor GetLatestTemperature(string roomName)
         {
+            ArduinoApiContext Ctx = new ArduinoApiContext();
+
             var temperature = from t in Ctx.TemperatureSensors
                 where t.RoomName == roomName
                 orderby t.T_Cts descending
@@ -132,6 +136,9 @@ namespace ArduinoIntegrationApi.Context
 
         public static LightSensor GetLatestLightSensorState(string roomName)
         {
+
+            ArduinoApiContext Ctx = new ArduinoApiContext();
+
             var lightSensorState = from l in Ctx.LightSensors
                 where l.RoomName == roomName
                 orderby l.L_Cts descending
@@ -142,6 +149,9 @@ namespace ArduinoIntegrationApi.Context
 
         public static WindowLock GetLatestWindowLockState(string roomName)
         {
+
+            ArduinoApiContext Ctx = new ArduinoApiContext();
+
             var windowLockState = from w in Ctx.WindowLocks
                 where w.RoomName == roomName
                 orderby w.W_Cts descending

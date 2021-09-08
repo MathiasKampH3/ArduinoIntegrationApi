@@ -18,7 +18,7 @@ namespace ArduinoIntegrationApi.Context
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=192.168.1.72;Database=ArduinoApiDb;User ID=admdb; Password=Kode1234!;");
+            optionsBuilder.UseSqlServer("Server=192.168.2.129;Database=ArduinoApiDb;User ID=admdb; Password=Kode1234!;");
         }
     }
 }

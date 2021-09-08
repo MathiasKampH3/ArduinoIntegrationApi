@@ -8,7 +8,7 @@ namespace ArduinoIntegrationApi.Controllers
     [Route("api/PostData")]
     public class ArduinoPostDataController : Controller
     {
-        [HttpPut]
+        [HttpGet]
         [Route("PostTemperature")]
         public StatusCodeResult PostTemperature(string roomName, float temperatureReading)
         {
@@ -23,7 +23,7 @@ namespace ArduinoIntegrationApi.Controllers
         }
 
 
-        [HttpPut]
+        [HttpGet]
         [Route("PostLightSensorState")]
         public StatusCodeResult PostLightSensorState(string roomName, bool lightSensorState)
         {
@@ -35,7 +35,7 @@ namespace ArduinoIntegrationApi.Controllers
             return new StatusCodeResult(400);
         }
 
-        [HttpPut]
+        [HttpGet]
         [Route("PostWindowLockState")]
         public StatusCodeResult PostWindowLockState(string roomName, bool windowLockState)
         {
