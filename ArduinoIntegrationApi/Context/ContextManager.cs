@@ -1,163 +1,92 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using ArduinoIntegrationApi.DataModels;
-using ArduinoIntegrationApi.Enums;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace ArduinoIntegrationApi.Context
 {
     public static class ContextManager
     {
-        
-
-        public static bool RoomExists(string roomName)
+        public static RoomReading GetLatestRoomData(string roomName)
         {
-            using ( ArduinoApiContext Ctx = new ArduinoApiContext())
-            {
-                var Rooms = (from r in Ctx.Rooms
-                    where r.RoomName == roomName
-                    select r).ToList();
-                if (Rooms.Count > 0)
-                {
-                    return true;
-                }
+            var allRoomData = GetAllRoomData();
 
-                return false;
-            }
+            var latestRoomData = (from roomData in allRoomData
+                where roomData.Rd_RoomName == roomName
+                orderby roomData.Rd_Cts descending
+                select roomData).ToList();
+
+            return latestRoomData.FirstOrDefault();
         }
 
-        public static Room CreateNewRoom(string roomName)
+
+        private static List<RoomReading> GetAllRoomData()
         {
-            Room newRoom = new Room();
-            if (!RoomExists(roomName))
-            {
-                using (ArduinoApiContext Ctx = new ArduinoApiContext())
-                {
-                    newRoom.RoomName = roomName;
+            ArduinoApiContext ctx = new ArduinoApiContext();
+            var allRoomData = ctx.RoomDatas
+                .Include(temp => temp.HeadTemperatureReading)
+                .Include(temp2 => temp2.FeetTemperatureReading)
+                .Include(light => light.LightReading)
+                .Include(sound => sound.SoundReading)
+                .Include(Humidify => Humidify.HumidityReading)
+                .Include(curtain => curtain.CurtainReading)
+                .ToList();
 
-                    Ctx.Rooms.Add(newRoom);
-                    Ctx.SaveChanges();
-                }
-            }
-
-            return newRoom;
+            return allRoomData;
         }
 
-        public static List<Room> GetAllRooms()
+
+        public static bool PostRoomData(string roomName, float tempHead, float humHead, float tempFeet,
+            string soundStatus, string curtainStatus, string lightStatus)
         {
-            ArduinoApiContext Ctx = new ArduinoApiContext();
+            bool newRoomDataAdded = false;
 
-            var rooms = (from r in Ctx.Rooms
-                select r).ToList();
+            DateTime dateNow = DateTime.Now;
 
-            return rooms;
-        }
+            //// remove millisecounds
+            dateNow = new DateTime(dateNow.Year, dateNow.Month, dateNow.Day, dateNow.Hour, dateNow.Minute,
+                dateNow.Second, dateNow.Kind);
 
-        public static bool AddNewTemperature(string roomName, float temperatureReading)
-        {
-            if (RoomExists(roomName))
+            using (ArduinoApiContext ctx = new ArduinoApiContext())
             {
-                using (ArduinoApiContext Ctx = new ArduinoApiContext())
+                ctx.RoomDatas.Add(new RoomReading()
                 {
-                    Ctx.TemperatureSensors.Add(new TemperatureSensor
-                        {
-                            T_Value = temperatureReading,
-                            T_Cts = DateTime.Now,
-                            ComponentType = ComponentType.TemperatureSensor,
-                            RoomName = roomName
-                        }
-                    );
-
-                    Ctx.SaveChanges();
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public static bool AddNewLightSensorSate(string roomName, bool lightSensorState)
-        {
-            if (RoomExists(roomName))
-            {
-                using (ArduinoApiContext Ctx = new ArduinoApiContext())
-                {
-                    Ctx.LightSensors.Add(new LightSensor
-                        {
-                            L_Value = lightSensorState,
-                            L_Cts = DateTime.Now,
-                            RoomName = roomName,
-                            ComponentType = ComponentType.LightSensor
-                        }
-                    );
-
-                    Ctx.SaveChanges();
-                    return true;
-                }
+                    Rd_Cts = dateNow,
+                    Rd_RoomName = roomName,
+                    HeadTemperatureReading = new TemperatureReading()
+                    {
+                        Ts_Value = tempHead,
+                    },
+                    HumidityReading = new HumidityReading()
+                    {
+                        Hum_Value = humHead
+                    },
+                    FeetTemperatureReading = new TemperatureReading()
+                    {
+                        Ts_Value = tempFeet
+                    },
+                    SoundReading = new SoundReading()
+                    {
+                        Sr_Value = soundStatus
+                    },
+                    CurtainReading = new CurtainReading()
+                    {
+                        Cur_Value = curtainStatus
+                    },
+                    LightReading = new LightReading()
+                    {
+                        Ls_Value = lightStatus
+                    }
+                });
+                Thread.Sleep(1000);
+                ctx.SaveChanges();
+                newRoomDataAdded = true;
             }
 
-            return false;
-        }
-
-        public static bool AddNewWindowLockState(string roomName, bool windowLockState)
-        {
-            if (RoomExists(roomName))
-            {
-                using (ArduinoApiContext Ctx = new ArduinoApiContext())
-                {
-                    Ctx.WindowLocks.Add(new WindowLock
-                        {
-                            W_Value = windowLockState,
-                            W_Cts = DateTime.Now,
-                            ComponentType = ComponentType.WindowLock,
-                            RoomName = roomName,
-                        }
-                    );
-
-                    Ctx.SaveChanges();
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public static TemperatureSensor GetLatestTemperature(string roomName)
-        {
-            ArduinoApiContext Ctx = new ArduinoApiContext();
-
-            var temperature = from t in Ctx.TemperatureSensors
-                where t.RoomName == roomName
-                orderby t.T_Cts descending
-                select t;
-
-            return temperature.First();
-        }
-
-        public static LightSensor GetLatestLightSensorState(string roomName)
-        {
-
-            ArduinoApiContext Ctx = new ArduinoApiContext();
-
-            var lightSensorState = from l in Ctx.LightSensors
-                where l.RoomName == roomName
-                orderby l.L_Cts descending
-                select l;
-
-            return lightSensorState.First();
-        }
-
-        public static WindowLock GetLatestWindowLockState(string roomName)
-        {
-
-            ArduinoApiContext Ctx = new ArduinoApiContext();
-
-            var windowLockState = from w in Ctx.WindowLocks
-                where w.RoomName == roomName
-                orderby w.W_Cts descending
-                select w;
-
-            return windowLockState.First();
+            return newRoomDataAdded;
         }
     }
 }

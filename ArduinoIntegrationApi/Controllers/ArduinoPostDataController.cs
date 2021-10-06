@@ -9,37 +9,10 @@ namespace ArduinoIntegrationApi.Controllers
     public class ArduinoPostDataController : Controller
     {
         [HttpGet]
-        [Route("PostTemperature")]
-        public StatusCodeResult PostTemperature(string roomName, float temperatureReading)
+        [Route("PostRoomData")]
+        public StatusCodeResult PostRoomData(string roomName, float tempHead, float humHead, float tempFeet,string soundStatus, string curtainStatus , string lightStatus)
         {
-            if (ContextManager.AddNewTemperature(roomName, temperatureReading))
-            {
-                return new StatusCodeResult(200);
-            }
-            else
-            {
-                return new StatusCodeResult(400);
-            }
-        }
-
-
-        [HttpGet]
-        [Route("PostLightSensorState")]
-        public StatusCodeResult PostLightSensorState(string roomName, bool lightSensorState)
-        {
-            if (ContextManager.AddNewLightSensorSate(roomName, lightSensorState))
-            {
-                return new StatusCodeResult(200);
-            }
-
-            return new StatusCodeResult(400);
-        }
-
-        [HttpGet]
-        [Route("PostWindowLockState")]
-        public StatusCodeResult PostWindowLockState(string roomName, bool windowLockState)
-        {
-            if (ContextManager.AddNewWindowLockState(roomName, windowLockState))
+            if (ContextManager.PostRoomData(roomName, tempHead, humHead, tempFeet, soundStatus, curtainStatus, lightStatus))
             {
                 return new StatusCodeResult(200);
             }

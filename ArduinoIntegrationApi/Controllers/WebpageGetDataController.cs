@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
-using ArduinoIntegrationApi.Context;
+﻿using ArduinoIntegrationApi.Context;
 using Microsoft.AspNetCore.Mvc;
 using ArduinoIntegrationApi.DataModels;
+using Newtonsoft.Json;
+
 
 namespace ArduinoIntegrationApi.Controllers
 {
@@ -10,31 +11,12 @@ namespace ArduinoIntegrationApi.Controllers
     public class WebpageGetDataController : Controller
     {
         [HttpGet]
-        [Route("GetLatestTemperature")]
-        public TemperatureSensor GetLatestTemperature(string roomName)
+        [Route("GetLatestRoomData")]
+        public string GetLatestRoomData(string roomName)
         {
-            return ContextManager.GetLatestTemperature(roomName);
-        }
+            RoomReading latestRoomData = ContextManager.GetLatestRoomData(roomName);
 
-        [HttpGet]
-        [Route("GetLatestLightSensorState")]
-        public LightSensor GetLatestLightSensorState(string roomName)
-        {
-            return ContextManager.GetLatestLightSensorState(roomName);
-        }
-
-        [HttpGet]
-        [Route("GetLatestWindowState")]
-        public WindowLock GetLatestWindowLockState(string roomName)
-        {
-            return ContextManager.GetLatestWindowLockState(roomName);
-        }
-
-        [HttpGet]
-        [Route("GetAllRooms")]
-        public List<Room> GetAllRooms()
-        {
-            return ContextManager.GetAllRooms();
+            return JsonConvert.SerializeObject(latestRoomData);
         }
     }
 }
